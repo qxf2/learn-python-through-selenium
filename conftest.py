@@ -183,7 +183,7 @@ def pytest_addoption(parser):
                       help="Browser. Valid options are firefox, ie and chrome")                      
     parser.addoption("-U","--app_url",
                       dest="url",
-                      default="https://qxf2.com",
+                      default="https://weathershopper.pythonanywhere.com",
                       help="The url of the application")
     parser.addoption("-A","--api_url",
                       dest="url",

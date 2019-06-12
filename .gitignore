@@ -6,6 +6,9 @@ __pycache__/
 #DS_Store
 .DS_store
 
+#Virtualenv
+venv*
+
 # C extensions
 *.so
 
