@@ -12,8 +12,10 @@
 #XPATH
 ###########################################
 
-#Locators for the footer object(footer_object.py)
-USERNAME_FIELD = "id,id_username"
-PASSWORD_FIELD = "name,password"
-LOGIN_BUTTON = "xpath,//button[text()='Login']"
-LOGOUT_LINK = "xpath,//a[text()='Logout']"
+#Locators for the Main page
+TEMPERATURE_FIELD = "id,temperature"
+BUY_BUTTON = "xpath,//button[contains(text(),'Buy %s')]"
+
+#Product page
+PAGE_HEADING = "xpath,//h2[text()='%s']"
+PRODUCTS_LIST = "xpath,//div[contains(@class,'col-4')]"

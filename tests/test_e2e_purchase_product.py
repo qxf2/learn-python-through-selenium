@@ -13,8 +13,8 @@ import os,sys,time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from page_objects.PageFactory import PageFactory
 from utils.Option_Parser import Option_Parser
+from utils.Custom_Exceptions import Stop_Test_Exception
 import conf.e2e_weather_shopper_conf as conf
-
 
 def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name,remote_flag,testrail_flag,tesults_flag,test_run_id,remote_project_name,remote_build_name):
 
@@ -24,14 +24,45 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
         expected_pass = 0
         actual_pass = -1
 
-        #1. Create a test object and fill the example form.
+        #Create a test object and fill the example form.
         test_obj = PageFactory.get_page_object("Main Page",base_url=base_url)
 
-        #2. Setup and register a driver
+        #Setup and register a driver
         start_time = int(time.time())	#Set start_time with current time
-        test_obj.register_driver(remote_flag,os_name,os_version,browser,browser_version,remote_project_name,remote_build_name)        
+        test_obj.register_driver(remote_flag,os_name,os_version,browser,browser_version,remote_project_name,remote_build_name)  
 
-        #13. Print out the results
+        #Read the temperature
+        temperature = test_obj.get_temperature()
+        if type(temperature) != int:
+            test_obj.log_result(False,
+            positive="",
+            negative="FAILED to parse the temperature on the landing page.")
+            raise Stop_Test_Exception("Stopping test because test could not parse the temperature on the landing page.")
+        else:
+            test_obj.log_result(True,
+            positive="SUCCESSFULLY obtained the temperature from the landing page",
+            negative="")
+        
+        #Choose the right product type
+        product_type = ""
+        if temperature <= 18:
+            product_type = "moisturizers"
+        if temperature >= 34:
+            product_type = "sunscreens"
+        result_flag = test_obj.click_buy_button(product_type)
+        test_obj.log_result(result_flag,
+        positive="SUCCESSFULLY landed on the %s page"%product_type,
+        negative="FAILED to land on the %s page"%product_type)
+
+        if not result_flag:
+            raise Stop_Test_Exception("Stopping test because we did not land on the right page after clicking the buy button")
+
+        #Add a product
+        product_filter_list = conf.PURCHASE_LOGIC[product_type]
+        for filter_condition in product_filter_list:
+            test_obj.add_product(filter_condition)
+
+        #Print out the results
         test_obj.write_test_summary()
 
         #Teardown
@@ -42,7 +73,7 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
         
     except Exception as e:
         print("Exception when trying to run test:%s"%__file__)
-        print("Python says:%s"%str(e))
+        print("Python says:%s"%repr(e))
 
     assert expected_pass == actual_pass, "Test failed: %s"%__file__
        
