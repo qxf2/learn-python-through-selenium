@@ -13,7 +13,6 @@ import os,sys,time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from page_objects.PageFactory import PageFactory
 from utils.Option_Parser import Option_Parser
-from utils.Custom_Exceptions import Stop_Test_Exception
 import conf.e2e_weather_shopper_conf as conf
 
 def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name,remote_flag,testrail_flag,tesults_flag,test_run_id,remote_project_name,remote_build_name):
@@ -33,15 +32,13 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
 
         #Read the temperature
         temperature = test_obj.get_temperature()
-        if type(temperature) != int:
-            test_obj.log_result(False,
-            positive="",
-            negative="FAILED to parse the temperature on the landing page.")
-            raise Stop_Test_Exception("Stopping test because test could not parse the temperature on the landing page.")
-        else:
-            test_obj.log_result(True,
-            positive="SUCCESSFULLY obtained the temperature from the landing page",
-            negative="")
+        result_flag = False
+        if type(temperature) == int:
+            result_flag = True 
+        test_obj.log_result(result_flag,
+        positive="Obtained the temperature from the landing page",
+        negative="Could not to parse the temperature on the landing page.",
+        level="critical")
         
         #Choose the right product type
         product_type = ""
@@ -51,11 +48,9 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
             product_type = "sunscreens"
         result_flag = test_obj.click_buy_button(product_type)
         test_obj.log_result(result_flag,
-        positive="SUCCESSFULLY landed on the %s page"%product_type,
-        negative="FAILED to land on the %s page"%product_type)
-
-        if not result_flag:
-            raise Stop_Test_Exception("Stopping test because we did not land on the right page after clicking the buy button")
+        positive="Landed on the %s page after clicking the buy button"%product_type,
+        negative="Could not land on the %s page after clicking the buy button"%product_type,
+        level="critical")
 
         #Add a product
         product_filter_list = conf.PURCHASE_LOGIC[product_type]

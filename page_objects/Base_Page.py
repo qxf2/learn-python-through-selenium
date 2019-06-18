@@ -16,6 +16,7 @@ from inspect import getargspec
 from utils.BrowserStack_Library import BrowserStack_Library
 from .DriverFactory import DriverFactory
 from page_objects import PageFactory
+from utils.Custom_Exceptions import Stop_Test_Exception
 from utils.Test_Rail import Test_Rail
 from utils import Tesults
 from conf import remote_credentials as Conf
@@ -639,6 +640,8 @@ class Base_Page(Borg,unittest.TestCase):
 
     def success(self,msg,level='info',pre_format='PASS: '):
         "Write out a success message"
+        if level.lower() == 'critical':
+            level = 'info'
         self.log_obj.write(pre_format + msg,level)
         self.result_counter += 1
         self.pass_counter += 1
@@ -649,6 +652,8 @@ class Base_Page(Borg,unittest.TestCase):
         self.log_obj.write(pre_format + msg,level)
         self.result_counter += 1
         self.failure_message_list.append(pre_format + msg)
+        if level.lower()=='critical':
+            raise Stop_Test_Exception("Stopping test because: " + msg)      
         
 
     def log_result(self,flag,positive,negative,level='info'):
