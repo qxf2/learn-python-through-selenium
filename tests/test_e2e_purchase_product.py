@@ -55,7 +55,10 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
         #Add a product
         product_filter_list = conf.PURCHASE_LOGIC[product_type]
         for filter_condition in product_filter_list:
-            test_obj.add_product(filter_condition)
+            result_flag = test_obj.add_cheapest_product(filter_condition)
+            test_obj.log_result(result_flag,
+            positive="Added the cheapest product with '%s'"%filter_condition,
+            negative="Could not add the cheapest product with '%s'"%filter_condition)
 
         #Print out the results
         test_obj.write_test_summary()
