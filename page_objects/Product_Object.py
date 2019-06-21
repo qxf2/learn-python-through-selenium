@@ -19,6 +19,8 @@ class Product_Object():
     PRODUCTS_LIST = locators.PRODUCTS_LIST
     ADD_PRODUCT_BUTTON = locators.ADD_PRODUCT_BUTTON
     CART_QUANTITY_TEXT = locators.CART_QUANTITY_TEXT
+    CART_BUTTON = locators.CART_BUTTON
+    CART_TITLE = locators.CART_TITLE
     CART_QUANTITY = 0
     PRODUCTS_PER_PAGE = 6
 
@@ -129,5 +131,30 @@ class Product_Object():
         result_flag = self.click_add_product_button(minimum_priced_product.name)
         after_cart_quantity = self.get_current_cart_quantity()
         result_flag &= True if after_cart_quantity - before_cart_quantity == 1 else False 
+
+        return result_flag
+
+    def click_cart_button(self):
+        "Click the cart button"
+        result_flag = self.click_element(self.CART_BUTTON)
+        self.conditional_write(result_flag,
+        positive="Clicked on the cart button",
+        negative="Could not click on the cart button")
+
+        return result_flag
+
+    def verify_cart_page(self):
+        "Verify automation is on the cart page"
+        result_flag = self.smart_wait(5,self.CART_TITLE)
+        self.conditional_write(result_flag,
+        positive="Automation is on the Cart page",
+        negative="Automation is not able to locate the Cart Title. Maybe it is not even on the cart page?")
+
+        return result_flag
+
+    def go_to_cart(self):
+        "Go to the cart page"
+        result_flag = self.click_cart_button()
+        result_flag &= self.verify_cart_page()
 
         return result_flag

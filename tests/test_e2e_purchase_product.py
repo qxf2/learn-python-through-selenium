@@ -60,6 +60,13 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
             positive="Added the cheapest product with '%s'"%filter_condition,
             negative="Could not add the cheapest product with '%s'"%filter_condition)
 
+        #Go to the cart
+        result_flag = test_obj.go_to_cart()
+        test_obj.log_result(result_flag,
+        positive="Automation is now on the cart page",
+        negative="Automation is not on the cart page",
+        level="critical")
+
         #Print out the results
         test_obj.write_test_summary()
 
