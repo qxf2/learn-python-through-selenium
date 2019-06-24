@@ -8,11 +8,10 @@ from utils.Wrapit import Wrapit
 
 class Product():
     "A product class"
-    def __init__(self,name,price,index):
+    def __init__(self,name,price):
         "Set up the product with name and price"
         self.name = name 
         self.price = price 
-        self.index = index 
 
 class Product_Object():
     "Page Object for the products object"
@@ -63,7 +62,7 @@ class Product_Object():
             product_text = self.get_dom_text(product)
             name = self.get_product_name(product_text)
             price = self.get_product_price(product_text)
-            all_products.append(Product(name, price, i))
+            all_products.append(Product(name, price))
         if self.PRODUCTS_PER_PAGE == len(all_products):
             result_flag = True 
         self.conditional_write(result_flag,
@@ -79,18 +78,17 @@ class Product_Object():
         for product in all_products:
             self.write("%s: %d"%(product.name,product.price))
 
-    def get_minimum_priced_product(self,filter_condition,all_products):
+    def get_minimum_priced_product(self,filter_condition):
         "Return the least expensive item based on a filter condition"
         minimum_priced_product = None 
         min_price = 10000000
-        min_index = None 
         min_name = ''
+        all_products = self.get_all_products_on_page()
         for product in all_products:
             if filter_condition.lower() in product.name.lower():
                 if product.price <= min_price:
                     minimum_priced_product = product
                     min_price = product.price
-                    min_index = product.index 
                     min_name = product.name 
         result_flag = True if minimum_priced_product is not None else False 
         self.conditional_write(result_flag,
@@ -100,7 +98,7 @@ class Product_Object():
         return minimum_priced_product
             
     def click_add_product_button(self,product_name):
-        "Click on the add button corresponding to the index"
+        "Click on the add button corresponding to the name"
         result_flag = self.click_element(self.ADD_PRODUCT_BUTTON%product_name)
         self.conditional_write(result_flag,
         positive="Clicked on the add button to buy: %s"%product_name,
@@ -123,12 +121,10 @@ class Product_Object():
         return cart_quantity
 
 
-    def add_cheapest_product(self,filter_condition):
+    def add_product(self,product_name):
         "Add the lowest priced product with the filter condition in name"
-        all_products = self.get_all_products_on_page()
-        minimum_priced_product = self.get_minimum_priced_product(filter_condition,all_products)
         before_cart_quantity = self.get_current_cart_quantity() 
-        result_flag = self.click_add_product_button(minimum_priced_product.name)
+        result_flag = self.click_add_product_button(product_name)
         after_cart_quantity = self.get_current_cart_quantity()
         result_flag &= True if after_cart_quantity - before_cart_quantity == 1 else False 
 
@@ -149,6 +145,8 @@ class Product_Object():
         self.conditional_write(result_flag,
         positive="Automation is on the Cart page",
         negative="Automation is not able to locate the Cart Title. Maybe it is not even on the cart page?")
+        if result_flag:
+            self.switch_page("cart")
 
         return result_flag
 

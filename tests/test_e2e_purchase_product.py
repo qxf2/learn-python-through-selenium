@@ -52,13 +52,16 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
         negative="Could not land on the %s page after clicking the buy button"%product_type,
         level="critical")
 
-        #Add a product
+        #Add products
         product_filter_list = conf.PURCHASE_LOGIC[product_type]
+        product_list = []
         for filter_condition in product_filter_list:
-            result_flag = test_obj.add_cheapest_product(filter_condition)
+            cheapest_product = test_obj.get_minimum_priced_product(filter_condition)
+            product_list.append(cheapest_product)
+            result_flag = test_obj.add_product(cheapest_product.name)
             test_obj.log_result(result_flag,
-            positive="Added the cheapest product with '%s'"%filter_condition,
-            negative="Could not add the cheapest product with '%s'"%filter_condition)
+            positive="Added the cheapest product '%s' with '%s'"%(cheapest_product.name,filter_condition),
+            negative="Could not add the cheapest product '%s' with '%s'"%(cheapest_product.name,filter_condition))
 
         #Go to the cart
         result_flag = test_obj.go_to_cart()
@@ -66,6 +69,9 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
         positive="Automation is now on the cart page",
         negative="Automation is not on the cart page",
         level="critical")
+
+        #Verify the products displayed on the cart page
+        result_flag = test_obj.verify_cart(product_list)
 
         #Print out the results
         test_obj.write_test_summary()

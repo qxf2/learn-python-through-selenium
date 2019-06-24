@@ -25,3 +25,5 @@ CART_BUTTON = "xpath,//button[@onclick='goToCart()']"
 
 #Cart page
 CART_TITLE = "xpath,//h2[text()='Checkout']"
+CART_ROW = "xpath,//tbody/descendant::tr"
+CART_ROW_COLUMN = "xpath,//tbody/descendant::tr[%d]/descendant::td"
