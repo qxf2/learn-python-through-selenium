@@ -12,6 +12,7 @@ class Cart_Page(Base_Page):
 
     CART_ROW = locators.CART_ROW
     CART_ROW_COLUMN = locators.CART_ROW_COLUMN
+    CART_TOTAL = locators.CART_TOTAL
     COL_NAME = 0
     COL_PRICE = 1 
 
@@ -45,57 +46,101 @@ class Cart_Page(Base_Page):
 
         return cart_items
 
-    def verify_cart(self,product_list):
-        "Verify the (name,price) of items in cart and the total"
-        result_flag = False
-        cart_items = self.get_cart_items()
-        
-        #Make sure expected and actual carts have the same number of items
-        if len(cart_items) == len(product_list):
+    def verify_cart_size(self,expected_cart,actual_cart):
+        "Make sure expected and actual carts have the same number of items"
+        result_flag = False 
+        if len(expected_cart) == len(actual_cart):
             result_flag = True
-        
         self.conditional_write(result_flag,
-        positive="The expected cart and actual cart have the same number of items: %d"%len(product_list),
-        negative="The expected cart has %d items while the actual cart has %d items"%(len(product_list),len(cart_items)))
+        positive="The expected cart and actual cart have the same number of items: %d"%len(expected_cart),negative="The expected cart has %d items while the actual cart has %d items"%(len(expected_cart),len(actual_cart)))
 
-        #Is every item in the cart in our expected list?
+        return result_flag
+    
+    def verify_extra_items(self,expected_cart,actual_cart):
+        "Items which exist in actual but not in expected"
         item_match_flag = True 
-        for item in cart_items:
+        for item in actual_cart:
             #Does the item exist in the product list
             found_flag = False 
             price_match_flag = False 
-            actual_price = 0
-            for product in product_list:
+            expected_price = 0
+            for product in expected_cart:
                 if product.name == item[self.COL_NAME]:
                     found_flag = True
                     if product.price == item[self.COL_PRICE]:
                         price_match_flag = True 
                     else:
-                        actual_price = product.price
+                        expected_price = product.price
                     break
             self.conditional_write(found_flag,
-            positive="Found the expected item %s in the cart"%item[self.COL_NAME],
-            negative="Could not find the expected item %s in the cart"%item[self.COL_NAME])
+            positive="Found the expected item '%s' in the cart"%item[self.COL_NAME],
+            negative="Found an unexpected item '%s' in the cart"%item[self.COL_NAME])
 
             self.conditional_write(price_match_flag,
-            positive="And the expected price matched to %d"%item[self.COL_PRICE],
-            negative="BUT the expected price did not match. Expected: %d but Obtained: %d"%(actual_price,item[self.COL_PRICE]))
+            positive="... the expected price matched to %d"%item[self.COL_PRICE],
+            negative="... the expected price did not match. Expected: %d but Obtained: %d"%(expected_price,item[self.COL_PRICE]))
 
             item_match_flag &= found_flag and price_match_flag
-
-        result_flag &= item_match_flag
         
-        #Is every item on the expected list in the cart?
-        if item_match_flag is False:
-            pass
-        """
-        #Make sure expected and actual carts have the same number of items
-        if len(cart_items) != len(product_list):
-            for product in product_list:
-                for item in cart_items:
-                    if product.name
-        """
+        return item_match_flag
 
-        #result_flag = self.verify_name()
-        #result_flag &= self.verify_price()
+    def verify_missing_item(self,expected_cart,actual_cart):
+        "Verify if expected items are missing from the cart"
+        item_match_flag = True
+        for product in expected_cart:
+            price_match_flag = False
+            found_flag = False
+            actual_price = 0 
+            for item in actual_cart:
+                if product.name == item[self.COL_NAME]:
+                    found_flag = True
+                    if product.price == item[self.COL_PRICE]:
+                        price_match_flag = True 
+                    else:
+                        actual_price = item[self.COL_PRICE]
+                    break    
+            item_match_flag &= found_flag and price_match_flag
+            self.conditional_write(found_flag,
+            positive="Found the expected item '%s' in the cart"%product.name,
+            negative="Did not find the expected item '%s' in the cart"%product.name)
+            self.conditional_write(price_match_flag,
+            positive="... the expected price matched to %d"%product.price,
+            negative="... the expected price did not match. Expected: %d but Obtained: %d"%(product.price,actual_price)) 
+
+        return item_match_flag
+
+    def get_total_price(self):
+        "Return the cart total"
+        actual_price = self.get_text(self.CART_TOTAL)
+        actual_price = actual_price.decode('ascii')
+        actual_price = actual_price.split('Rupees')[-1]
+        try:
+            actual_price = int(actual_price)
+        except Exception as e:
+            self.write("Could not convert '%s' (cart total price) into an integer"%actual_price)
+
+        return actual_price
+
+    def verify_cart_total(self,expected_cart):
+        "Verify the total in the cart"
+        expected_total = 0
+        for product in expected_cart:
+            expected_total += product.price 
+        actual_total = self.get_total_price()
+        result_flag = actual_total == expected_total
+        self.conditional_write(result_flag,
+        positive="The cart total displayed is correct",
+        negative="The expected and actual cart totals do not match. Expected: %d, actual: %d"%(expected_total, actual_total))
+
+        return result_flag
+
+    def verify_cart(self,expected_cart):
+        "Verify the (name,price) of items in cart and the total"
+        actual_cart = self.get_cart_items()
+        result_flag = self.verify_cart_size(expected_cart,actual_cart)
+        result_flag &= self.verify_extra_items(expected_cart,actual_cart)
+        if result_flag is False:
+            result_flag &= self.verify_missing_item(expected_cart,actual_cart)
+        result_flag &= self.verify_cart_total(expected_cart)
+
         return result_flag 

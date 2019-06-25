@@ -53,6 +53,7 @@ class Product_Object():
 
         return price
 
+    @Wrapit._screenshot
     def get_all_products_on_page(self):
         "Get all the products"
         result_flag = False 
@@ -106,6 +107,7 @@ class Product_Object():
 
         return result_flag
 
+    @Wrapit._screenshot
     def get_current_cart_quantity(self):
         "Return the number of items in the cart"
         cart_text = self.get_text(self.CART_QUANTITY_TEXT)
@@ -120,7 +122,6 @@ class Product_Object():
 
         return cart_quantity
 
-
     def add_product(self,product_name):
         "Add the lowest priced product with the filter condition in name"
         before_cart_quantity = self.get_current_cart_quantity() 
@@ -130,6 +131,7 @@ class Product_Object():
 
         return result_flag
 
+    @Wrapit._screenshot
     def click_cart_button(self):
         "Click the cart button"
         result_flag = self.click_element(self.CART_BUTTON)
@@ -139,6 +141,7 @@ class Product_Object():
 
         return result_flag
 
+    @Wrapit._screenshot
     def verify_cart_page(self):
         "Verify automation is on the cart page"
         result_flag = self.smart_wait(5,self.CART_TITLE)

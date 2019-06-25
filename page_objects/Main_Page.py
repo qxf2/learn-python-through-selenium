@@ -18,6 +18,7 @@ class Main_Page(Base_Page):
         url = ''
         self.open(url)
 
+    @Wrapit._screenshot
     def get_temperature(self):
         "Return the temperature listed on the landing page"
         result_flag = False 
@@ -44,6 +45,7 @@ class Main_Page(Base_Page):
         return temperature
 
     @Wrapit._exceptionHandler
+    @Wrapit._screenshot
     def click_buy_button(self,product_type):
         "Choose to buy moisturizer or sunscreen"
         result_flag = False 
@@ -62,5 +64,3 @@ class Main_Page(Base_Page):
         negative="Automation could not navigate to the %s page"%product_type.title())
 
         return result_flag
-
-
