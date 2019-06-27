@@ -83,7 +83,7 @@ def test_e2e_weather_shopper(base_url,browser,browser_version,os_version,os_name
         #Teardown
         test_obj.wait(3)
         expected_pass = test_obj.result_counter
-        actual_pass = test_obj.pass_counter
+        actual_pass = test_obj.past_counter
         test_obj.teardown()
         
     except Exception as e:
